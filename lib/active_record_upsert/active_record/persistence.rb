@@ -5,12 +5,12 @@ module ActiveRecordUpsert
       def upsert
         raise ::ActiveRecord::ReadOnlyRecord, "#{self.class} is marked as readonly" if readonly?
         raise ::ActiveRecord::RecordSavedError, "Can't upsert a record that has already been saved" if persisted?
-        values = run_callbacks(:save) {
+        run_callbacks(:save) {
           run_callbacks(:create) {
-            _upsert_record
+            res = _upsert_record
+            assign_attributes(res.first.to_h)
           }
         }
-        assign_attributes(values.first.to_h)
         self
       rescue ::ActiveRecord::RecordInvalid
         false
