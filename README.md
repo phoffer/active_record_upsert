@@ -67,6 +67,25 @@ bin/run_rails.sh db:create db:migrate DATABASE_URL=postgresql://localhost/upsert
 
 Then run `rspec`.
 
+Also, it's possible to specify which columns should be used for the conflict clause. **These must comprise a unique index in Postgres.**
+
+```
+class Vehicle < ActiveRecord::Base
+  upsert_by [:make, :name]
+end
+
+Vehicle.upsert(make: 'Ford', name: 'F-150', doors: 4)
+=> #<Vehicle id: 1, make: 'Ford', name: 'Focus', doors: 2>
+
+Vehicle.create(make: 'Ford', name: 'Focus', doors: 4)
+=> #<Vehicle id: 2, make: 'Ford', name: 'Focus', doors: 4>
+
+r = Vehicle.new(make: 'Ford', name: 'F-150')
+r.doors = 2
+r.upsert
+=> #<Vehicle id: 1, make: 'Ford', name: 'Focus', doors: 2>
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/jesjos/active_record_upsert.
